@@ -58,7 +58,7 @@ print(f"Shape after reindex: {df.shape}")
 print(f"Missing before fill: {df.isnull().sum().sum():,}")
 df[RAW_COLS] = df[RAW_COLS].interpolate(method = "time", limit_direction = "both", limit = 60)
 df[RAW_COLS] = df[RAW_COLS].ffill().bfill()
-print(f"Missing after fill : {df.isnull().sum().sum():,}")
+print(f"Missing after fill: {df.isnull().sum().sum():,}")
 
 for col in RAW_COLS:
     n_neg = (df[col] < 0).sum()
@@ -82,4 +82,23 @@ for col in RAW_COLS:
         df[col] = df[col].interpolate(method = "time", limit_direction = "both")
         df[col] = df[col].ffill().bfill()
     print(f"[{col}] clean after {iteration} iteration(s)")
+
+print(f"Shape: {df.shape}")
+print(f"Remaining NaN: {df.isnull().sum().sum()}")
+print(f"Negative values: {sum((df[col] < 0).sum() for col in RAW_COLS)}")
+
+all_clear = True
+print("Outlier check (Z > 4):")
+for col in RAW_COLS:
+    z = np.abs(stats.zscore(df[col].dropna()))
+    rem = (z > 4).sum()
+    print(f"{col:<30}: {rem}")
+    if rem > 0:
+        all_clear = False
+
+if all_clear:
+    print("\nAll checks passed")
+else:
+    print("\nSome outliers remain. We need to check manually.")
+
 
