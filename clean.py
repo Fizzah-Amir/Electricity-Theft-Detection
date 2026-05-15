@@ -63,5 +63,23 @@ print(f"Missing after fill : {df.isnull().sum().sum():,}")
 for col in RAW_COLS:
     n_neg = (df[col] < 0).sum()
     if n_neg > 0:
-        print(f"  Clipping {n_neg:,} negative values in '{col}'")
+        print(f"Clipping {n_neg:,} negative values in '{col}'")
         df[col] = df[col].clip(lower = 0)
+
+print("\nIterative Z-score outlier removal (threshold Z > 4):")
+for col in RAW_COLS:
+    iteration = 0
+    while True:
+        z_scores = np.abs(stats.zscore(df[col].dropna()))
+        outlier_mask = pd.Series(False, index = df.index)
+        outlier_mask[df[col].dropna().index] = z_scores > 4.0
+        n_out = outlier_mask.sum()
+        if n_out == 0:
+            break
+        iteration = iteration + 1
+        print(f"[{col}] iter {iteration}: replacing {n_out:,} outliers")
+        df.loc[outlier_mask, col] = np.nan
+        df[col] = df[col].interpolate(method = "time", limit_direction = "both")
+        df[col] = df[col].ffill().bfill()
+    print(f"[{col}] clean after {iteration} iteration(s)")
+
