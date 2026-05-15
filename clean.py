@@ -60,3 +60,8 @@ df[RAW_COLS] = df[RAW_COLS].interpolate(method = "time", limit_direction = "both
 df[RAW_COLS] = df[RAW_COLS].ffill().bfill()
 print(f"Missing after fill : {df.isnull().sum().sum():,}")
 
+for col in RAW_COLS:
+    n_neg = (df[col] < 0).sum()
+    if n_neg > 0:
+        print(f"  Clipping {n_neg:,} negative values in '{col}'")
+        df[col] = df[col].clip(lower = 0)
