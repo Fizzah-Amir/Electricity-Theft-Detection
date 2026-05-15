@@ -54,3 +54,9 @@ print(f"Missing timestamps: {missing_ts:,} (gaps in the grid)")
 df = df.reindex(full_range)
 df = df.apply(pd.to_numeric, errors = "coerce")
 print(f"Shape after reindex: {df.shape}")
+
+print(f"Missing before fill: {df.isnull().sum().sum():,}")
+df[RAW_COLS] = df[RAW_COLS].interpolate(method = "time", limit_direction = "both", limit = 60)
+df[RAW_COLS] = df[RAW_COLS].ffill().bfill()
+print(f"Missing after fill : {df.isnull().sum().sum():,}")
+
