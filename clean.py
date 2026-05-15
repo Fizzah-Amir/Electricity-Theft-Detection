@@ -18,3 +18,14 @@ RAW_COLS = [
     "Sub_metering_2",
     "Sub_metering_3",
 ]
+WINDOW_DAYS = 7
+THEFT_FRAC  = 0.072
+SMOTE_RATIO = 0.3
+
+df = pd.read_csv(
+    "household_power_consumption.txt",
+    sep = ";",
+    na_values = ["?", "", " "],
+    low_memory= False
+)
+df.columns = df.columns.str.replace(r'^\d+', '', regex=True).str.strip()
