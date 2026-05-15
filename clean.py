@@ -132,5 +132,6 @@ print(f"Daily rows: {len(daily):,}")
 print(f"Features per day: {daily.shape[1]}")
 print(f"Date range: {daily.index.min().date()} => {daily.index.max().date()}")
 
+daily.to_csv("daily_aggregated.csv")
 
 
