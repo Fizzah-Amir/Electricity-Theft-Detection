@@ -123,4 +123,14 @@ daily_parts["is_weekend"] = df["IsWeekend"].resample("D").first()
 for h in range(24):
     daily_parts[f"hour_{h:02d}_mean_power"] = (df[df["Hour"] == h]["Global_active_power"].resample("D").mean())
 
+daily = pd.DataFrame(daily_parts)
+daily.index.name = "Date"
+daily.dropna(how = "all", inplace = True)
+daily.fillna(0, inplace = True)
+
+print(f"Daily rows: {len(daily):,}")
+print(f"Features per day: {daily.shape[1]}")
+print(f"Date range: {daily.index.min().date()} => {daily.index.max().date()}")
+
+
 
