@@ -101,4 +101,16 @@ if all_clear:
 else:
     print("\nSome outliers remain. We need to check manually.")
 
+df["Hour"] = df.index.hour
+df["IsWeekend"] = (df.index.dayofweek >= 5).astype(int)
+df["IsPeak"] = ((df["Hour"] >= 7) & (df["Hour"] < 22)).astype(int)
+
+daily_parts = {}
+
+for col in RAW_COLS:
+    daily_parts[f"{col}_mean"] = df[col].resample("D").mean()
+    daily_parts[f"{col}_max"] = df[col].resample("D").max()
+    daily_parts[f"{col}_min"] = df[col].resample("D").min()
+    daily_parts[f"{col}_std"] = df[col].resample("D").std()
+    daily_parts[f"{col}_sum"] = df[col].resample("D").sum()
 
