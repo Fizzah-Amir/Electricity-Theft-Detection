@@ -119,3 +119,8 @@ offpeak_mean = df[df["IsPeak"] == 0]["Global_active_power"].resample("D").mean()
 
 daily_parts["peak_offpeak_ratio"] = peak_mean / (offpeak_mean + 1e-6)
 daily_parts["is_weekend"] = df["IsWeekend"].resample("D").first()
+
+for h in range(24):
+    daily_parts[f"hour_{h:02d}_mean_power"] = (df[df["Hour"] == h]["Global_active_power"].resample("D").mean())
+
+
