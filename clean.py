@@ -114,3 +114,5 @@ for col in RAW_COLS:
     daily_parts[f"{col}_std"] = df[col].resample("D").std()
     daily_parts[f"{col}_sum"] = df[col].resample("D").sum()
 
+peak_mean = df[df["IsPeak"] == 1]["Global_active_power"].resample("D").mean()
+offpeak_mean = df[df["IsPeak"] == 0]["Global_active_power"].resample("D").mean()
