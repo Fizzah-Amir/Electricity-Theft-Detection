@@ -29,3 +29,18 @@ df = pd.read_csv(
     low_memory= False
 )
 df.columns = df.columns.str.replace(r'^\d+', '', regex=True).str.strip()
+
+print(f"Shape: {df.shape}")
+print(f"Columns: {df.columns.tolist()}")
+print(f"Total missing vals: {df.isnull().sum().sum()}")
+print(f"Missing per column \n{df.isnull().sum().to_string()}")
+
+df["Datetime"] = pd.to_datetime(
+    df["Date"] + " " + df["Time"],
+    format = "%d/%m/%Y %H:%M:%S",
+    errors = "coerce"
+)
+df.drop(columns=["Date", "Time"], inplace = True)
+df.sort_values("Datetime", inplace = True)
+df.set_index("Datetime", inplace = True)
+
