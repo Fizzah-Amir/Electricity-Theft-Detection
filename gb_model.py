@@ -104,3 +104,7 @@ class GradientBoostingFromScratch:
     def _sigmoid(self, x):
         x = np.clip(x, -500, 500)
         return 1.0 / (1.0 + np.exp(-x))
+    
+    def _gradients(self, y, pred_prob):
+        weight = np.where(y == 1, self.scale_pos_weight, 1.0)
+        return weight * (pred_prob - y)
