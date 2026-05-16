@@ -87,3 +87,16 @@ class DecisionStump:
 
     def predict(self, X):
         return np.array([self._predict_row(self.tree, row) for row in X])
+    
+
+class GradientBoostingFromScratch:
+
+    def __init__(self, n_estimators=100, learning_rate=0.05,
+                 max_depth=3, lambda_reg=1.0, scale_pos_weight=1.0):
+        self.n_estimators     = n_estimators
+        self.learning_rate    = learning_rate
+        self.max_depth        = max_depth
+        self.lambda_reg       = lambda_reg
+        self.scale_pos_weight = scale_pos_weight
+        self.trees            = []
+        self.base_score       = 0.5
