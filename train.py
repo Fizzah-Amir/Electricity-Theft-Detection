@@ -49,3 +49,15 @@ model.save("xgb_scratch_results/gb_scratch_model.pkl")
 print("\n" + "=" * 50)
 print("Evaluating ...")
 print("=" * 50)
+
+
+y_pred = model.predict(X_test)
+y_prob = model.predict_proba(X_test)
+
+acc  = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, zero_division=0)
+rec  = recall_score(y_test, y_pred, zero_division=0)
+f1   = f1_score(y_test, y_pred, zero_division=0)
+auc  = roc_auc_score(y_test, y_prob)
+cm   = confusion_matrix(y_test, y_pred)
+tn, fp, fn, tp = cm.ravel()
