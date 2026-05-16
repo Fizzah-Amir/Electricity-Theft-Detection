@@ -100,3 +100,7 @@ class GradientBoostingFromScratch:
         self.scale_pos_weight = scale_pos_weight
         self.trees            = []
         self.base_score       = 0.5
+    
+    def _sigmoid(self, x):
+        x = np.clip(x, -500, 500)
+        return 1.0 / (1.0 + np.exp(-x))
