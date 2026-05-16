@@ -6,6 +6,12 @@ from imblearn.over_sampling import SMOTE
 import joblib
 import warnings
 warnings.filterwarnings("ignore")
+import os
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import seaborn as sns
 
 RANDOM_SEED = 42
 np.random.seed(RANDOM_SEED)
