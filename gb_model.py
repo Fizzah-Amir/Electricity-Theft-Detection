@@ -76,3 +76,13 @@ class DecisionStump:
     def fit(self, X, gradients, hessians, lambda_reg=1.0):
         self.tree = self._build_tree(
             X, gradients, hessians, self.max_depth, lambda_reg)
+        
+    def _predict_row(self, node, row):
+        if node["leaf"]:
+            return node["value"]
+        if row[node["feature"]] <= node["threshold"]:
+            return self._predict_row(node["left"],  row)
+        else:
+            return self._predict_row(node["right"], row)
+
+    
