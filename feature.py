@@ -153,3 +153,62 @@ plt.tight_layout()
 plt.savefig("eda_plots/EDA6_hourly_avg_consumption.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("    EDA-6  Hourly average consumption saved")
+
+daily["DayType"] = np.where(daily.index.dayofweek >= 5, "Weekend", "Weekday")
+fig, ax = plt.subplots(figsize=(7, 5))
+weekday_v = daily[daily["DayType"]=="Weekday"]["Global_active_power_mean"]
+weekend_v = daily[daily["DayType"]=="Weekend"]["Global_active_power_mean"]
+ax.boxplot([weekday_v, weekend_v], labels=["Weekday", "Weekend"],
+           patch_artist=True,
+           boxprops=dict(facecolor=ACCENT, alpha=0.6),
+           medianprops=dict(color=ACCENT2, linewidth=2))
+ax.set_title("EDA-7  Weekday vs Weekend Consumption",
+             fontsize=12, fontweight="bold")
+ax.set_ylabel("Active Power (kW)")
+plt.tight_layout()
+plt.savefig("eda_plots/EDA7_weekday_vs_weekend.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-7  Weekday vs weekend               saved")
+
+sm_cols = ["Sub_metering_1_mean", "Sub_metering_2_mean", "Sub_metering_3_mean"]
+sm_avgs = daily[sm_cols].mean()
+fig, ax = plt.subplots(figsize=(7, 5))
+ax.bar(["Kitchen\n(SM1)", "Laundry\n(SM2)", "Water Heater/AC\n(SM3)"],
+       sm_avgs.values,
+       color=["#42A5F5", "#EF5350", "#66BB6A"], alpha=0.85)
+ax.set_title("EDA-8  Average Sub-metering Consumption",
+             fontsize=12, fontweight="bold")
+ax.set_ylabel("Energy (Wh)")
+plt.tight_layout()
+plt.savefig("eda_plots/EDA8_submetering_breakdown.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-8  Sub-metering breakdown saved")
+
+rolling7  = daily["Global_active_power_mean"].rolling(7, min_periods=1).mean()
+deviation = daily["Global_active_power_mean"] - rolling7
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 7), sharex=True)
+ax1.plot(daily.index, daily["Global_active_power_mean"],
+         color=ACCENT, linewidth=0.8, alpha=0.6, label="Daily mean")
+ax1.plot(daily.index, rolling7,
+         color=ACCENT2, linewidth=2, label="7-day rolling avg")
+ax1.set_ylabel("Active Power (kW)")
+ax1.set_title("EDA-9  Rolling 7-Day Average vs Raw Daily Power",
+              fontsize=12, fontweight="bold")
+ax1.legend()
+ax2.fill_between(daily.index, deviation,
+                 where=deviation >= 0, color=ACCENT2,
+                 alpha=0.5, label="Above avg")
+ax2.fill_between(daily.index, deviation,
+                 where=deviation < 0, color=ACCENT,
+                 alpha=0.5, label="Below avg")
+ax2.axhline(0, color="black", linewidth=0.8, linestyle="--")
+ax2.set_ylabel("Deviation (kW)")
+ax2.set_xlabel("Date")
+ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+ax2.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+plt.xticks(rotation=45)
+ax2.legend(fontsize=9)
+plt.tight_layout()
+plt.savefig("eda_plots/EDA9_rolling_avg_vs_raw.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-9  Rolling avg vs raw daily power   saved")
