@@ -104,3 +104,31 @@ plt.tight_layout()
 plt.savefig("xgb_scratch_results/graph2_metrics_bar.png", dpi=150)
 plt.close()
 print("Saved: xgb_scratch_results/graph2_metrics_bar.png")
+
+
+feature_counts = np.zeros(X_train.shape[1])
+def count_splits(node, counts):
+    if node["leaf"]:
+        return
+    counts[node["feature"]] += 1
+    count_splits(node["left"],  counts)
+    count_splits(node["right"], counts)
+
+for tree in model.trees:
+    count_splits(tree.tree, feature_counts)
+
+top_idx      = np.argsort(feature_counts)[::-1][:15]
+top_features = [all_col_names[i] for i in top_idx]
+top_values   = feature_counts[top_idx]
+fig, ax = plt.subplots(figsize=(10, 7))
+ax.barh(range(15), top_values[::-1], color="#FFA726", alpha=0.85)
+ax.set_yticks(range(15))
+ax.set_yticklabels(top_features[::-1], fontsize=9)
+ax.set_xlabel("Number of Times Used in Splits")
+ax.set_title("Top 15 Important Features - Gradient Boosting (Scratch)", fontsize=13)
+plt.tight_layout()
+plt.savefig("xgb_scratch_results/graph3_feature_importance.png", dpi=150)
+plt.close()
+print("Saved: xgb_scratch_results/graph3_feature_importance.png")
+
+print("\nAll done! Check xgb_scratch_results/ folder.")
