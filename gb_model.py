@@ -73,3 +73,6 @@ class DecisionStump:
             "right"     : self._build_tree(X[right], gradients[right],
                                            hessians[right], depth-1, lambda_reg),
         }
+    def fit(self, X, gradients, hessians, lambda_reg=1.0):
+        self.tree = self._build_tree(
+            X, gradients, hessians, self.max_depth, lambda_reg)
