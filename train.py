@@ -71,3 +71,17 @@ print(f"  F1 Score  : {f1*100:.2f}%")
 print(f"  ROC-AUC   : {auc:.4f}")
 print(f"  TP={tp}  FP={fp}  FN={fn}  TN={tn}")
 print(f"==============================")
+
+
+fig, ax = plt.subplots(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Purples",
+            xticklabels=["Normal", "Theft"],
+            yticklabels=["Normal", "Theft"],
+            annot_kws={"size": 16, "weight": "bold"})
+ax.set_title("Confusion Matrix - Gradient Boosting (Scratch)", fontsize=13)
+ax.set_xlabel("Predicted")
+ax.set_ylabel("Actual")
+plt.tight_layout()
+plt.savefig("xgb_scratch_results/graph1_confusion_matrix.png", dpi=150)
+plt.close()
+print("\nSaved: xgb_scratch_results/graph1_confusion_matrix.png")
