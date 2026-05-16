@@ -112,3 +112,44 @@ plt.tight_layout()
 plt.savefig("eda_plots/EDA4_daily_power_timeseries.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("    EDA-4  Time-series daily power saved")
+
+daily["Month"] = daily.index.month
+month_order    = ["Jan","Feb","Mar","Apr","May","Jun",
+                  "Jul","Aug","Sep","Oct","Nov","Dec"]
+monthly_avg    = daily.groupby("Month")["Global_active_power_mean"].mean()
+monthly_avg.index = month_order
+fig, ax = plt.subplots(figsize=(10, 5))
+bars = ax.bar(monthly_avg.index, monthly_avg.values,
+              color=sns.color_palette("muted", 12),
+              edgecolor="white", linewidth=0.5)
+for bar in bars:
+    ax.text(bar.get_x() + bar.get_width()/2,
+            bar.get_height() + 0.01,
+            f"{bar.get_height():.2f}",
+            ha="center", va="bottom", fontsize=8)
+ax.set_title("EDA-5  Monthly Average Active Power",
+             fontsize=12, fontweight="bold")
+ax.set_xlabel("Month")
+ax.set_ylabel("Avg Active Power (kW)")
+plt.tight_layout()
+plt.savefig("eda_plots/EDA5_monthly_avg_consumption.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-5  Monthly average consumption saved")
+
+hour_cols = [f"hour_{h:02d}_mean_power" for h in range(24)]
+hourly_avg = daily[hour_cols].mean()
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(range(24), hourly_avg.values,
+        color=ACCENT, marker="o", linewidth=2, markersize=5)
+ax.fill_between(range(24), hourly_avg.values, alpha=0.15, color=ACCENT)
+ax.axvspan(7, 22, alpha=0.07, color="orange", label="Peak hours (07-22)")
+ax.set_title("EDA-6  Hourly Average Active Power",
+             fontsize=12, fontweight="bold")
+ax.set_xlabel("Hour of Day")
+ax.set_ylabel("Avg Active Power (kW)")
+ax.set_xticks(range(0, 24))
+ax.legend()
+plt.tight_layout()
+plt.savefig("eda_plots/EDA6_hourly_avg_consumption.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-6  Hourly average consumption saved")
