@@ -85,4 +85,5 @@ class DecisionStump:
         else:
             return self._predict_row(node["right"], row)
 
-    
+    def predict(self, X):
+        return np.array([self._predict_row(self.tree, row) for row in X])
