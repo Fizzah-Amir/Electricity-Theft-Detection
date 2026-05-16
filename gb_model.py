@@ -46,3 +46,30 @@ class DecisionStump:
                     best_threshold = threshold
 
         return best_feature, best_threshold
+    
+    def _build_tree(self, X, gradients, hessians, depth, lambda_reg=1.0):
+        G          = gradients.sum()
+        H          = hessians.sum()
+        leaf_value = -G / (H + lambda_reg)
+
+        if depth == 0 or len(X) < 4:
+            return {"leaf": True, "value": leaf_value}
+
+        feature, threshold = self._best_split(
+            X, gradients, hessians, lambda_reg)
+
+        if feature is None:
+            return {"leaf": True, "value": leaf_value}
+
+        left  = X[:, feature] <= threshold
+        right = ~left
+
+        return {
+            "leaf"      : False,
+            "feature"   : feature,
+            "threshold" : threshold,
+            "left"      : self._build_tree(X[left],  gradients[left],
+                                           hessians[left],  depth-1, lambda_reg),
+            "right"     : self._build_tree(X[right], gradients[right],
+                                           hessians[right], depth-1, lambda_reg),
+        }
