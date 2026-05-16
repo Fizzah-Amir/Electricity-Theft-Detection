@@ -108,3 +108,8 @@ class GradientBoostingFromScratch:
     def _gradients(self, y, pred_prob):
         weight = np.where(y == 1, self.scale_pos_weight, 1.0)
         return weight * (pred_prob - y)
+    
+    def _hessians(self, y, pred_prob):
+        weight = np.where(y == 1, self.scale_pos_weight, 1.0)
+        hess   = weight * pred_prob * (1.0 - pred_prob)
+        return np.maximum(hess, 1e-6)
