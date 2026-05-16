@@ -33,3 +33,19 @@ print("Files loaded!")
 print("\n" + "=" * 50)
 print("Training Gradient Boosting from Scratch ...")
 print("=" * 50)
+
+
+scale_pos = (y_train == 0).sum() / (y_train == 1).sum()
+print(f"  scale_pos_weight = {scale_pos:.2f}")
+
+model = GradientBoostingFromScratch(
+    n_estimators=100, learning_rate=0.05,
+    max_depth=3, lambda_reg=1.0,
+    scale_pos_weight=scale_pos
+)
+model.fit(X_train, y_train)
+model.save("xgb_scratch_results/gb_scratch_model.pkl")
+
+print("\n" + "=" * 50)
+print("Evaluating ...")
+print("=" * 50)
