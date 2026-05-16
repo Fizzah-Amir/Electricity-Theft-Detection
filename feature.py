@@ -39,3 +39,48 @@ print(f"  Date range       : {daily.index.min().date()}  →  {daily.index.max()
 print()
 print("STEP 5b — Exploratory Data Analysis (EDA)")
 print()
+
+
+os.makedirs("eda_plots", exist_ok=True)
+sns.set_theme(style="darkgrid", palette="muted")
+
+FIGSIZE_WIDE = (14, 5)
+FIGSIZE_SQ   = (10, 8)
+ACCENT       = "#2196F3"
+ACCENT2      = "#FF5722"
+
+def sample_df(df, n=200_000):
+    return df.sample(n, random_state=RANDOM_SEED) if len(df) > n else df
+
+print("  Building EDA plots")
+
+mean_cols = [c for c in daily.columns if c.endswith("_mean") and
+             any(r in c for r in RAW_COLS)][:7]
+desc = daily[mean_cols].describe().round(4)
+fig, ax = plt.subplots(figsize=(14, 3))
+ax.axis("off")
+tbl = ax.table(cellText=desc.values, rowLabels=desc.index,
+               colLabels=desc.columns, cellLoc="center", loc="center")
+tbl.auto_set_font_size(False)
+tbl.set_fontsize(7)
+tbl.scale(1, 1.6)
+ax.set_title("EDA-1  Descriptive Statistics (Daily Aggregated)",
+             fontsize=12, fontweight="bold", pad=12)
+plt.tight_layout()
+plt.savefig("eda_plots/EDA1_descriptive_statistics.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-1  Descriptive statistics          saved")
+
+fig, ax = plt.subplots(figsize=(8, 5))
+daily["Global_active_power_mean"].hist(
+    bins=60, color=ACCENT, alpha=0.7, ax=ax, density=True)
+daily["Global_active_power_mean"].plot.kde(
+    ax=ax, color=ACCENT2, linewidth=2)
+ax.set_title("EDA-2  Daily Mean Active Power Distribution",
+             fontsize=12, fontweight="bold")
+ax.set_xlabel("Active Power (kW)")
+ax.set_ylabel("Density")
+plt.tight_layout()
+plt.savefig("eda_plots/EDA2_feature_distributions.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-2  Feature distributions saved")
