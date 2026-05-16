@@ -151,3 +151,7 @@ class GradientBoostingFromScratch:
     def save(self, path):
         joblib.dump(self, path)
         print(f"  Model saved → {path}")
+    
+    @staticmethod
+    def load(path):
+        return joblib.load(path)
