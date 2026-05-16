@@ -139,3 +139,9 @@ class GradientBoostingFromScratch:
                       f"— Loss: {loss:.4f}")
 
         print("  Training done!")
+        
+    def predict_proba(self, X):
+        raw_pred = np.full(X.shape[0], self.base_pred)
+        for tree in self.trees:
+            raw_pred += self.learning_rate * tree.predict(X)
+        return self._sigmoid(raw_pred)
