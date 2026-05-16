@@ -212,3 +212,229 @@ plt.tight_layout()
 plt.savefig("eda_plots/EDA9_rolling_avg_vs_raw.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("    EDA-9  Rolling avg vs raw daily power   saved")
+
+day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+daily["DayOfWeek"] = daily.index.dayofweek
+dow_groups = [
+    daily[daily["DayOfWeek"]==d]["Global_active_power_mean"].values
+    for d in range(7)
+]
+fig, ax = plt.subplots(figsize=(11, 5))
+bp = ax.boxplot(dow_groups, labels=day_names,
+                patch_artist=True, showfliers=False,
+                medianprops=dict(color="white", linewidth=2))
+colors = sns.color_palette("muted", 7)
+for patch, color in zip(bp["boxes"], colors):
+    patch.set_facecolor(color)
+    patch.set_alpha(0.8)
+ax.set_title("EDA-10  Active Power by Day of Week",
+             fontsize=12, fontweight="bold")
+ax.set_xlabel("Day of Week")
+ax.set_ylabel("Active Power (kW)")
+plt.tight_layout()
+plt.savefig("eda_plots/EDA10_power_by_day_of_week.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-10 Power by day of week saved")
+
+daily.drop(columns=["Month", "DayType", "DayOfWeek"],
+           errors="ignore", inplace=True)
+print(f"\n  All 10 EDA plots saved to eda_plots/")
+print()
+print("STEP 7 — 7-day sliding windows + Robust Feature Engineering")
+print()
+
+daily_values = daily.values
+daily_dates  = daily.index
+n_days       = len(daily)
+n_day_feats  = daily.shape[1]
+
+windows   = []
+win_dates = []
+
+for start in range(n_days - WINDOW_DAYS + 1):
+    end   = start + WINDOW_DAYS
+    block = daily_values[start:end]
+    flat  = block.flatten()
+
+    gap_mean     = daily["Global_active_power_mean"].iloc[start:end]
+    rolling_avg  = gap_mean.mean()
+    trend        = float(np.polyfit(np.arange(WINDOW_DAYS), gap_mean.values, 1)[0])
+    deviation    = gap_mean.std()
+    max_dev      = (gap_mean - rolling_avg).abs().max()
+    weekly_total = daily["Global_active_power_sum"].iloc[start:end].sum()
+    pk_ratio     = daily["peak_offpeak_ratio"].iloc[start:end].mean()
+
+    win_weekend  = daily["is_weekend"].iloc[start:end].values
+    win_power    = daily["Global_active_power_mean"].iloc[start:end].values
+    weekend_avg  = win_power[win_weekend == 1].mean() if (win_weekend == 1).any() else 0.0
+    weekday_avg  = win_power[win_weekend == 0].mean() if (win_weekend == 0).any() else 0.0
+    wk_ratio     = weekend_avg / (weekday_avg + 1e-6)
+
+    first_half     = gap_mean.iloc[:3].mean()
+    second_half    = gap_mean.iloc[4:].mean()
+    recovery_ratio = second_half / (first_half + 1e-6)
+
+    low_threshold   = rolling_avg * 0.4
+    consecutive_low = float((gap_mean < low_threshold).sum())
+    stability_cv = deviation / (rolling_avg + 1e-6)
+
+    engineered = np.array([
+        rolling_avg, trend, deviation, max_dev,
+        weekly_total, pk_ratio, wk_ratio,
+        recovery_ratio, consecutive_low, stability_cv
+    ])
+
+    windows.append(np.concatenate([flat, engineered]))
+    win_dates.append((daily_dates[start].date(), daily_dates[end-1].date()))
+
+windows = np.array(windows)
+
+day_col_names = [
+    f"day{d+1}_{feat}"
+    for d in range(WINDOW_DAYS)
+    for feat in daily.columns
+]
+eng_col_names = [
+    "eng_rolling_avg_power",
+    "eng_trend_slope",
+    "eng_std_deviation",
+    "eng_max_deviation",
+    "eng_weekly_total",
+    "eng_peak_offpeak_ratio",
+    "eng_weekend_weekday_ratio",
+    "eng_recovery_ratio",
+    "eng_consecutive_low",
+    "eng_stability_cv",
+]
+all_col_names = day_col_names + eng_col_names
+
+print(f"  Total windows    : {len(windows):,}")
+print(f"  Features/window  : {windows.shape[1]}")
+print(f"    = {WINDOW_DAYS} days × {n_day_feats} daily features")
+print(f"    + 7 original engineered features")
+print(f"    + 3 NEW robust features")
+print(f"      → eng_recovery_ratio   (handles vacation return)")
+print(f"      → eng_consecutive_low  (handles short trips)")
+print(f"      → eng_stability_cv     (handles new appliances)")
+
+print()
+print("STEP 8 — Theft injection at window level")
+print()
+
+n_windows = len(windows)
+n_theft   = int(n_windows * THEFT_FRAC)
+n_A       = int(n_theft * 0.40)
+n_B       = int(n_theft * 0.35)
+n_C       = n_theft - n_A - n_B
+
+all_idx = np.arange(n_windows)
+labels  = np.zeros(n_windows, dtype=int)
+X       = windows.copy()
+
+def col_idx(keyword):
+    return [i for i, c in enumerate(all_col_names) if keyword in c]
+
+gap_cols   = col_idx("Global_active_power_mean")
+gi_cols    = col_idx("Global_intensity_mean")
+sm1_cols   = col_idx("Sub_metering_1_mean")
+sm2_cols   = col_idx("Sub_metering_2_mean")
+sm3_cols   = col_idx("Sub_metering_3_mean")
+volt_cols  = col_idx("Voltage")
+
+power_like = [
+    c for c in (col_idx("Global_active_power") +
+                col_idx("Global_intensity") +
+                col_idx("Sub_metering"))
+    if c not in volt_cols
+]
+
+spike_idx = np.random.choice(all_idx, size=n_A, replace=False)
+for i in spike_idx:
+    scale = np.random.uniform(1.5, 3.0)
+    for c in gap_cols:
+        X[i, c] *= scale
+    for c in gi_cols:
+        X[i, c] *= scale * np.random.uniform(0.8, 1.0)
+labels[spike_idx] = 1
+print(f"  Pattern A (spike attack)      : {n_A:>5,} windows")
+
+remaining_B = np.setdiff1d(all_idx, spike_idx)
+block_idx   = np.random.choice(remaining_B, size=n_B, replace=False)
+for i in block_idx:
+    for c in power_like:
+        X[i, c] *= np.random.uniform(0.0, 0.15)
+labels[block_idx] = 1
+print(f"  Pattern B (blackout, no Volt) : {n_B:>5,} windows")
+
+taken_C   = np.where(labels == 1)[0]
+remain_C  = np.setdiff1d(all_idx, taken_C)
+burst_idx = np.random.choice(remain_C, size=n_C, replace=False)
+for i in burst_idx:
+    scale = np.random.uniform(2.0, 4.0)
+    for c in sm1_cols + sm2_cols + sm3_cols:
+        X[i, c] *= scale
+labels[burst_idx] = 1
+print(f"  Pattern C (sub-meter burst)   : {n_C:>5,} windows")
+
+n_theft_act = labels.sum()
+theft_pct   = n_theft_act / n_windows * 100
+print(f"\n  Total windows  : {n_windows:,}")
+print(f"  Normal   (0)   : {n_windows - n_theft_act:,}  ({100-theft_pct:.1f}%)")
+print(f"  Theft    (1)   : {n_theft_act:,}  ({theft_pct:.1f}%)")
+
+print()
+print("STEP 9 — Split → Scale → SMOTE")
+print()
+
+X_train_raw, X_test_raw, y_train, y_test, idx_train, idx_test = train_test_split(
+    X, labels, np.arange(n_windows),
+    test_size    = 0.20,
+    random_state = RANDOM_SEED,
+    stratify     = labels
+)
+print(f"  Train : {len(X_train_raw):>6,} windows | theft {y_train.sum():,}")
+print(f"  Test  : {len(X_test_raw):>6,} windows | theft {y_test.sum():,}")
+
+scaler  = MinMaxScaler()
+X_train = scaler.fit_transform(X_train_raw)
+X_test  = scaler.transform(X_test_raw)
+joblib.dump(scaler, "scaler.pkl")
+print(f"\n  Scaler saved → scaler.pkl")
+
+print(f"\n  Before SMOTE → Normal: {(y_train==0).sum():,} | Theft: {(y_train==1).sum():,}")
+smote = SMOTE(sampling_strategy=SMOTE_RATIO,
+              random_state=RANDOM_SEED, k_neighbors=5)
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
+n0 = (y_train_smote == 0).sum()
+n1 = (y_train_smote == 1).sum()
+print(f"  After  SMOTE → Normal: {n0:,} | Theft: {n1:,}")
+print(f"  Theft fraction after SMOTE : {n1/(n0+n1)*100:.1f}%")
+print(f"  Synthetic windows created  : {n1 - (y_train==1).sum():,}")
+
+print()
+print("STEP 10 — Saving output files")
+print("=" * 60)
+
+pd.DataFrame(X_train_smote, columns=all_col_names).to_csv(
+    "X_train_smote.csv", index=False)
+pd.Series(y_train_smote, name="Label").to_csv(
+    "y_train_smote.csv", index=False)
+pd.DataFrame(X_test, columns=all_col_names).to_csv(
+    "X_test.csv", index=False)
+pd.Series(y_test, name="Label").to_csv(
+    "y_test.csv", index=False)
+
+win_index_df = pd.DataFrame(win_dates, columns=["window_start", "window_end"])
+win_index_df["label"] = labels
+win_index_df["split"] = "train"
+win_index_df.iloc[idx_test,
+    win_index_df.columns.get_loc("split")] = "test"
+win_index_df.to_csv("windows_index.csv", index=True, index_label="window_id")
+
+print("  Saved: X_train_smote.csv")
+print("  Saved: y_train_smote.csv")
+print("  Saved: X_test.csv")
+print("  Saved: y_test.csv")
+print("  Saved: scaler.pkl")
+print("  Saved: windows_index.csv")
