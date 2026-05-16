@@ -84,3 +84,31 @@ plt.tight_layout()
 plt.savefig("eda_plots/EDA2_feature_distributions.png", dpi=150, bbox_inches="tight")
 plt.close()
 print("    EDA-2  Feature distributions saved")
+
+mean_cols_corr = [c for c in daily.columns if c.endswith("_mean")][:7]
+corr = daily[mean_cols_corr].corr()
+fig, ax = plt.subplots(figsize=FIGSIZE_SQ)
+sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm",
+            center=0, linewidths=0.5, annot_kws={"size": 10}, ax=ax)
+ax.set_title("EDA-3  Feature Correlation Heatmap",
+             fontsize=13, fontweight="bold", pad=12)
+plt.tight_layout()
+plt.savefig("eda_plots/EDA3_correlation_heatmap.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-3  Correlation heatmap saved")
+
+fig, ax = plt.subplots(figsize=FIGSIZE_WIDE)
+ax.plot(daily.index, daily["Global_active_power_mean"],
+        color=ACCENT, linewidth=0.7, alpha=0.8, label="Daily mean")
+ax.set_title("EDA-4  Daily Mean Active Power Over Time",
+             fontsize=12, fontweight="bold")
+ax.set_xlabel("Date")
+ax.set_ylabel("Active Power (kW)")
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+plt.xticks(rotation=45)
+ax.legend()
+plt.tight_layout()
+plt.savefig("eda_plots/EDA4_daily_power_timeseries.png", dpi=150, bbox_inches="tight")
+plt.close()
+print("    EDA-4  Time-series daily power saved")
