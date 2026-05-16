@@ -59,3 +59,30 @@ print(pred_df[["window_start", "window_end",
 
 pred_df.to_csv("gb_scratch_testing/all_predictions.csv", index=False)
 print(f"\n  All {len(pred_df)} predictions saved → gb_scratch_testing/all_predictions.csv")
+print("\n" + "=" * 50)
+print("SECTION 4.7 - Post Processing")
+print("=" * 50)
+
+print("\n  4.7a — Flagging Suspicious Users")
+print("  " + "-" * 40)
+
+suspicious = pred_df[pred_df["predicted"] == 1].copy()
+suspicious["risk_level"] = pd.cut(
+    suspicious["theft_prob_%"],
+    bins   = [0, 60, 80, 100],
+    labels = ["Medium Risk", "High Risk", "Critical Risk"]
+)
+
+print(f"  Total flagged as theft : {len(suspicious)}")
+print(f"  Critical Risk (>80%)   : {(suspicious['risk_level'] == 'Critical Risk').sum()}")
+print(f"  High Risk    (60-80%)  : {(suspicious['risk_level'] == 'High Risk').sum()}")
+print(f"  Medium Risk  (<60%)    : {(suspicious['risk_level'] == 'Medium Risk').sum()}")
+
+if len(suspicious) > 0:
+    print("\n  Flagged Windows:")
+    print(suspicious[["window_start", "window_end",
+                       "theft_prob_%", "risk_level",
+                       "actual_label"]].to_string(index=False))
+
+suspicious.to_csv("gb_scratch_testing/suspicious_users.csv", index=False)
+print("\n  Saved → gb_scratch_testing/suspicious_users.csv")
