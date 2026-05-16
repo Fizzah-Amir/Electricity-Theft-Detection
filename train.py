@@ -61,3 +61,13 @@ f1   = f1_score(y_test, y_pred, zero_division=0)
 auc  = roc_auc_score(y_test, y_prob)
 cm   = confusion_matrix(y_test, y_pred)
 tn, fp, fn, tp = cm.ravel()
+
+
+print(f"\n========== RESULTS ==========")
+print(f"  Accuracy  : {acc*100:.2f}%")
+print(f"  Precision : {prec*100:.2f}%")
+print(f"  Recall    : {rec*100:.2f}%")
+print(f"  F1 Score  : {f1*100:.2f}%")
+print(f"  ROC-AUC   : {auc:.4f}")
+print(f"  TP={tp}  FP={fp}  FN={fn}  TN={tn}")
+print(f"==============================")
