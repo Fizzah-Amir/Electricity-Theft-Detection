@@ -113,3 +113,29 @@ class GradientBoostingFromScratch:
         weight = np.where(y == 1, self.scale_pos_weight, 1.0)
         hess   = weight * pred_prob * (1.0 - pred_prob)
         return np.maximum(hess, 1e-6)
+    
+    def fit(self, X, y):
+        print(f"\n  Training {self.n_estimators} boosting rounds ...")
+        self.base_pred = np.log(self.base_score / (1 - self.base_score))
+        raw_pred = np.full(len(y), self.base_pred)
+
+        for i in range(self.n_estimators):
+            pred_prob = self._sigmoid(raw_pred)
+            grads     = self._gradients(y, pred_prob)
+            hess      = self._hessians(y, pred_prob)
+
+            tree = DecisionStump(max_depth=self.max_depth)
+            tree.fit(X, grads, hess, self.lambda_reg)
+
+            raw_pred += self.learning_rate * tree.predict(X)
+            self.trees.append(tree)
+
+            if (i+1) % 20 == 0:
+                loss = -np.mean(
+                    y * np.log(pred_prob + 1e-9) +
+                    (1-y) * np.log(1 - pred_prob + 1e-9)
+                )
+                print(f"  Round {i+1:>3}/{self.n_estimators} "
+                      f"— Loss: {loss:.4f}")
+
+        print("  Training done!")
