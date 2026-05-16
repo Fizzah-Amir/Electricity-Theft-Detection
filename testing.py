@@ -28,3 +28,34 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 os.makedirs("gb_scratch_testing", exist_ok=True)
+print("\n" + "=" * 50)
+print("SECTION 4.6 - Predictions on Unseen Data")
+print("=" * 50)
+
+y_pred = model.predict(X_test)
+y_prob = model.predict_proba(X_test)
+
+pred_df = pd.DataFrame({
+    "window_id"    : test_windows["window_id"] if "window_id" in test_windows.columns else range(len(y_pred)),
+    "window_start" : test_windows["window_start"].values,
+    "window_end"   : test_windows["window_end"].values,
+    "actual_label" : y_test,
+    "predicted"    : y_pred,
+    "theft_prob_%" : (y_prob * 100).round(2),
+    "result"       : ["✓ Correct" if p == a else "✗ Wrong"
+                      for p, a in zip(y_pred, y_test)]
+})
+
+pred_df["prediction_meaning"] = pred_df["predicted"].map({
+    0: "Normal User",
+    1: "Electricity Theft Detected"
+})
+
+print("\n  Sample Predictions (first 20 rows):")
+print(pred_df[["window_start", "window_end",
+               "actual_label", "predicted",
+               "prediction_meaning", "theft_prob_%",
+               "result"]].head(20).to_string(index=False))
+
+pred_df.to_csv("gb_scratch_testing/all_predictions.csv", index=False)
+print(f"\n  All {len(pred_df)} predictions saved → gb_scratch_testing/all_predictions.csv")
