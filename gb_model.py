@@ -145,3 +145,9 @@ class GradientBoostingFromScratch:
         for tree in self.trees:
             raw_pred += self.learning_rate * tree.predict(X)
         return self._sigmoid(raw_pred)
+    def predict(self, X, threshold=0.5):
+        return (self.predict_proba(X) >= threshold).astype(int)
+
+    def save(self, path):
+        joblib.dump(self, path)
+        print(f"  Model saved → {path}")
