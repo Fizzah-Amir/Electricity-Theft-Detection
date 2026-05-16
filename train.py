@@ -85,3 +85,22 @@ plt.tight_layout()
 plt.savefig("xgb_scratch_results/graph1_confusion_matrix.png", dpi=150)
 plt.close()
 print("\nSaved: xgb_scratch_results/graph1_confusion_matrix.png")
+
+
+metric_names = ["Accuracy", "Precision", "Recall", "F1 Score", "ROC-AUC"]
+metric_vals  = [acc*100, prec*100, rec*100, f1*100, auc*100]
+bar_colors   = ["#42A5F5", "#66BB6A", "#EF5350", "#FFA726", "#AB47BC"]
+fig, ax = plt.subplots(figsize=(8, 5))
+bars = ax.bar(metric_names, metric_vals, color=bar_colors, width=0.5)
+ax.set_ylim(0, 115)
+ax.set_ylabel("Score (%)")
+ax.set_title("All Metrics - Gradient Boosting (Scratch)", fontsize=13)
+for bar, val in zip(bars, metric_vals):
+    ax.text(bar.get_x() + bar.get_width()/2,
+            bar.get_height() + 1.5,
+            f"{val:.1f}%",
+            ha="center", fontsize=11, fontweight="bold")
+plt.tight_layout()
+plt.savefig("xgb_scratch_results/graph2_metrics_bar.png", dpi=150)
+plt.close()
+print("Saved: xgb_scratch_results/graph2_metrics_bar.png")
