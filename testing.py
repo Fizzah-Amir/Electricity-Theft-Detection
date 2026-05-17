@@ -145,3 +145,19 @@ plt.tight_layout()
 plt.savefig("gb_scratch_testing/graph1_probability_distribution.png", dpi=150)
 plt.close()
 print("  Saved → gb_scratch_testing/graph1_probability_distribution.png")
+fig, ax = plt.subplots(figsize=(7, 7))
+labels  = ["Correctly Normal\n(TN)", "Correctly Caught\nTheft (TP)",
+           "Missed Theft\n(FN)", "False Alarm\n(FP)"]
+sizes   = [correct_normal, correct_theft, missed_theft, false_alarm]
+colors  = ["#42A5F5", "#66BB6A", "#EF5350", "#FFA726"]
+explode = [0, 0.05, 0.05, 0.05]
+wedges, texts, autotexts = ax.pie(sizes, labels=labels, colors=colors,
+    explode=explode, autopct="%1.1f%%", startangle=90,
+    textprops={"fontsize": 11})
+for at in autotexts:
+    at.set_fontweight("bold")
+ax.set_title("Prediction Breakdown — GB Scratch on Test Data", fontsize=13)
+plt.tight_layout()
+plt.savefig("gb_scratch_testing/graph2_prediction_breakdown.png", dpi=150)
+plt.close()
+print("  Saved → gb_scratch_testing/graph2_prediction_breakdown.png")
