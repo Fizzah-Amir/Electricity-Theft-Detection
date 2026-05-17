@@ -127,3 +127,21 @@ print("\n" + report_text)
 with open("gb_scratch_testing/alert_report.txt", "w") as f:
     f.write(report_text)
 print("\n  Saved → gb_scratch_testing/alert_report.txt")
+print("\n  4.7c — Visualizing Consumption Patterns")
+print("  " + "-" * 40)
+
+# Graph 1 — Probability Distribution
+fig, ax = plt.subplots(figsize=(9, 5))
+normal_probs = y_prob[y_test == 0] * 100
+theft_probs  = y_prob[y_test == 1] * 100
+ax.hist(normal_probs, bins=30, color="#42A5F5", alpha=0.7, label="Normal Users")
+ax.hist(theft_probs,  bins=30, color="#EF5350", alpha=0.7, label="Theft Cases")
+ax.axvline(50, color="black", linestyle="--", linewidth=1.5, label="Decision Threshold (50%)")
+ax.set_xlabel("Theft Probability (%)")
+ax.set_ylabel("Number of Windows")
+ax.set_title("Theft Probability Distribution — Normal vs Theft", fontsize=13)
+ax.legend()
+plt.tight_layout()
+plt.savefig("gb_scratch_testing/graph1_probability_distribution.png", dpi=150)
+plt.close()
+print("  Saved → gb_scratch_testing/graph1_probability_distribution.png")
