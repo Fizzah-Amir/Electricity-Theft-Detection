@@ -86,3 +86,39 @@ if len(suspicious) > 0:
 
 suspicious.to_csv("gb_scratch_testing/suspicious_users.csv", index=False)
 print("\n  Saved → gb_scratch_testing/suspicious_users.csv")
+print("\n  4.7b — Generating Alert Report")
+print("  " + "-" * 40)
+
+correct_theft  = ((y_pred == 1) & (y_test == 1)).sum()
+missed_theft   = ((y_pred == 0) & (y_test == 1)).sum()
+false_alarm    = ((y_pred == 1) & (y_test == 0)).sum()
+correct_normal = ((y_pred == 0) & (y_test == 0)).sum()
+
+report_lines = [
+    "=" * 50,
+    "  Gradient Boosting ELECTRICITY THEFT ALERT REPORT",
+    f"  Generated : {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+    "=" * 50,
+    "",
+    "SUMMARY",
+    "-" * 40,
+    f"  Total windows tested    : {len(y_test)}",
+    f"  Theft cases (actual)    : {y_test.sum()}",
+    f"  Normal cases (actual)   : {(y_test==0).sum()}",
+    "",
+    "DETECTION RESULTS",
+    "-" * 40,
+    f"  Correctly caught theft  : {correct_theft}  (True Positives)",
+    f"  Missed theft cases      : {missed_theft}  (False Negatives)",
+    f"  False alarms raised     : {false_alarm}  (False Positives)",
+    f"  Correctly cleared       : {correct_normal}  (True Negatives)",
+    "",
+    "RISK BREAKDOWN",
+    "-" * 40,
+    f"  Critical Risk (>80%)    : {(suspicious['risk_level'] == 'Critical Risk').sum() if len(suspicious) > 0 else 0}",
+    f"  High Risk    (60-80%)   : {(suspicious['risk_level'] == 'High Risk').sum() if len(suspicious) > 0 else 0}",
+    f"  Medium Risk  (<60%)     : {(suspicious['risk_level'] == 'Medium Risk').sum() if len(suspicious) > 0 else 0}",
+    "",
+    "=" * 50,
+]
+
