@@ -197,4 +197,19 @@ print(f"  ROC-AUC   : {auc:.4f}")
 print()
 print(classification_report(y_test, y_pred,
       target_names=["Normal", "Theft"], zero_division=0))
+fig, ax = plt.subplots(figsize=(6, 5))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Purples",
+            xticklabels=["Normal", "Theft"],
+            yticklabels=["Normal", "Theft"],
+            annot_kws={"size": 16, "weight": "bold"})
+ax.set_title("Confusion Matrix - GB Scratch (Test Data)", fontsize=13)
+ax.set_xlabel("Predicted")
+ax.set_ylabel("Actual")
+plt.tight_layout()
+plt.savefig("gb_scratch_testing/graph4_confusion_matrix.png", dpi=150)
+plt.close()
+print("  Saved → gb_scratch_testing/graph4_confusion_matrix.png")
 
+print("\n" + "=" * 50)
+print("ALL DONE!")
+print("=" * 50)
