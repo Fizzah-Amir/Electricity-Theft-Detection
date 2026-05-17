@@ -179,3 +179,22 @@ plt.tight_layout()
 plt.savefig("gb_scratch_testing/graph3_risk_levels.png", dpi=150)
 plt.close()
 print("  Saved → gb_scratch_testing/graph3_risk_levels.png")
+print("\n  4.7d — Model Evaluation (Classification Metrics)")
+print("  " + "-" * 40)
+
+acc  = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred, zero_division=0)
+rec  = recall_score(y_test, y_pred, zero_division=0)
+f1   = f1_score(y_test, y_pred, zero_division=0)
+auc  = roc_auc_score(y_test, y_prob)
+cm   = confusion_matrix(y_test, y_pred)
+
+print(f"\n  Accuracy  : {acc*100:.2f}%")
+print(f"  Precision : {prec*100:.2f}%")
+print(f"  Recall    : {rec*100:.2f}%")
+print(f"  F1 Score  : {f1*100:.2f}%")
+print(f"  ROC-AUC   : {auc:.4f}")
+print()
+print(classification_report(y_test, y_pred,
+      target_names=["Normal", "Theft"], zero_division=0))
+
