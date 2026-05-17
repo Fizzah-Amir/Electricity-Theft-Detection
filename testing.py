@@ -161,3 +161,21 @@ plt.tight_layout()
 plt.savefig("gb_scratch_testing/graph2_prediction_breakdown.png", dpi=150)
 plt.close()
 print("  Saved → gb_scratch_testing/graph2_prediction_breakdown.png")
+fig, ax = plt.subplots(figsize=(7, 5))
+if len(suspicious) > 0:
+    risk_counts = suspicious["risk_level"].value_counts()
+    risk_colors = {"Critical Risk": "#EF5350",
+                   "High Risk"    : "#FFA726",
+                   "Medium Risk"  : "#42A5F5"}
+    bars = ax.bar(risk_counts.index, risk_counts.values,
+                  color=[risk_colors[r] for r in risk_counts.index], width=0.4)
+    for bar, val in zip(bars, risk_counts.values):
+        ax.text(bar.get_x() + bar.get_width()/2,
+                bar.get_height() + 0.1,
+                str(val), ha="center", fontsize=13, fontweight="bold")
+ax.set_ylabel("Number of Windows")
+ax.set_title("Flagged Suspicious Windows by Risk Level", fontsize=13)
+plt.tight_layout()
+plt.savefig("gb_scratch_testing/graph3_risk_levels.png", dpi=150)
+plt.close()
+print("  Saved → gb_scratch_testing/graph3_risk_levels.png")
