@@ -121,4 +121,9 @@ report_lines = [
     "",
     "=" * 50,
 ]
+report_text = "\n".join(report_lines)
+print("\n" + report_text)
 
+with open("gb_scratch_testing/alert_report.txt", "w") as f:
+    f.write(report_text)
+print("\n  Saved → gb_scratch_testing/alert_report.txt")
